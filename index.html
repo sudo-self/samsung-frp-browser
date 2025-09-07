@@ -76,21 +76,18 @@
         <a class="github-button" href="https://github.com/sudo-self/samsung-frp-browser" data-color-scheme="light" data-icon="octicon-star" data-size="large">Star</a>
     </div>
 
-    <!-- USB Debugging Section -->
+ 
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
         <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Enable USB Debugging</h1>
         <div class="flex justify-center mb-4">
             <button id="connectButton" class="btn-primary">Connect Device USB</button>
-        </div>
-        <div class="flex justify-center mb-4">
-            <button id="sendCommandsButton" class="btn-secondary">Enable USB Debugging</button>
         </div>
         <h3 class="text-xl text-gray-300 font-bold">Not working? Try a different USB port</h3>
         <div class="warning">Note: This requires a device in Download Mode or with OEM dialer codes enabled</div>
         <div id="log" class="log"></div>
     </div>
 
-    <!-- ADB & FRP Section -->
+
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
         <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Bypass FRP</h1>
         <div class="flex justify-center mb-4">
@@ -105,28 +102,29 @@
         <div id="logadb" class="log"></div>
     </div>
 
-    <!-- Device Info & Progress Section -->
+ 
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
         <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Device Info & Progress</h1>
         <div id="deviceInfo" class="text-gray-300 mb-4">Device not connected</div>
         <ul id="commandProgress" class="list-disc list-inside text-green-400"></ul>
     </div>
 
-    <!-- Footer Section -->
+
     <div class="container mx-auto p-6 text-center bg-gray-900 rounded-lg shadow-lg">
         <p class="text-2xl text-pink-500 font-bold mb-4">
             <a href="https://unlock.JesseJesse.com" target="_blank" class="text-pink-400 hover:underline">Bypass Software</a>
         </p>
         <center><img src="./support.png" width="200px" height="auto"></center>
-        <p class="text-pink-500 font-bold mb-4 cursor-pointer" onclick="alert('This is tool for educational purposes only. Made for use on devices you own. I am not responsible for damages and data loss is likely to occur.')">Warning!</p>
+        <p class="text-pink-500 font-bold mb-4 cursor-pointer" onclick="alert('This tool is for educational purposes only. Use on devices you own. I am not responsible for damages or data loss.')">Warning!</p>
     </div>
 
     <script>
+        let usbDevice = null;
         let adbDevice = null;
         let adbConnected = false;
 
-        function logAdb(message) {
-            const logElement = document.getElementById('logadb');
+        function log(message, logId='log') {
+            const logElement = document.getElementById(logId);
             logElement.innerHTML += message + '<br>';
             logElement.scrollTop = logElement.scrollHeight;
         }
@@ -149,58 +147,76 @@
             ul.appendChild(li);
         }
 
-        async function connectAdb() {
+     
+        document.getElementById('connectButton').addEventListener('click', async () => {
             if (!navigator.usb) {
-                logAdb('WebUSB not supported. Use Chrome or Edge.');
+                log('❌ WebUSB not supported. Use Chrome or Edge.');
                 return;
             }
-
             try {
-                logAdb('Requesting ADB device...');
+                log('Requesting USB device...');
+                usbDevice = await navigator.usb.requestDevice({ filters: [] }); 
+                log(`✅ USB device selected: ${usbDevice.productName}`);
+                await usbDevice.open();
+                log('Device opened successfully.');
+            } catch (err) {
+                log(`❌ USB connection failed: ${err.message}`);
+            }
+        });
+
+    
+        document.getElementById('connectAdbButton').addEventListener('click', async () => {
+            if (!usbDevice) {
+                log('⚠️ Connect USB device first', 'logadb');
+                return;
+            }
+            try {
+                log('Requesting ADB device...', 'logadb');
                 adbDevice = await Adb.open('WebUSB');
                 await adbDevice.connectAdb('host::');
                 adbConnected = true;
                 updateAdbStatus();
-                logAdb('✅ ADB connected!');
+                log('✅ ADB connected!', 'logadb');
 
-                // Display basic device info
+          
                 const model = await executeAdbCommand('getprop ro.product.model') || 'Unknown';
                 const androidVersion = await executeAdbCommand('getprop ro.build.version.release') || 'Unknown';
                 const deviceName = await executeAdbCommand('getprop ro.product.device') || 'Unknown';
                 updateDeviceInfo(`Model: ${model}, Android: ${androidVersion}, Device: ${deviceName}`);
 
             } catch (err) {
-                logAdb(`❌ Connection failed: ${err.message}`);
+                log(`❌ ADB connection failed: ${err.message}`, 'logadb');
                 adbConnected = false;
                 updateAdbStatus();
                 updateDeviceInfo('Device not connected');
             }
-        }
+        });
 
         async function executeAdbCommand(command) {
             if (!adbConnected || !adbDevice) {
-                logAdb('⚠️ Not connected to ADB device');
+                log('⚠️ Not connected to ADB device', 'logadb');
                 return '';
             }
             try {
-                logAdb(`> ${command}`);
+                log(`> ${command}`, 'logadb');
                 const stream = await adbDevice.shell(command);
                 let output = '';
                 for await (const data of stream) {
                     output += new TextDecoder().decode(data);
                 }
                 await stream.close();
-                logAdb(output.trim());
+                log(output.trim(), 'logadb');
                 return output.trim();
             } catch (err) {
-                logAdb(`❌ Command error: ${err.message}`);
+                log(`❌ Command error: ${err.message}`, 'logadb');
                 return '';
             }
         }
 
-        async function bypassFrp() {
+        // Bypass FRP
+        document.getElementById('bypassFrpButton').addEventListener('click', async () => {
             if (!adbConnected) {
-                logAdb('⚠️ Connect via ADB first');
+                log('⚠️ Connect via ADB first', 'logadb');
                 return;
             }
 
@@ -215,7 +231,7 @@
             ];
 
             document.getElementById('commandProgress').innerHTML = '';
-            logAdb('⚡ Starting FRP bypass...');
+            log('⚡ Starting FRP bypass...', 'logadb');
 
             for (const cmd of commands) {
                 try {
@@ -226,12 +242,8 @@
                     addCommandProgress(cmd, false);
                 }
             }
-            logAdb('✅ FRP bypass commands completed. You may reboot your device now.');
-        }
-
-        // Event listeners
-        document.getElementById('connectAdbButton').addEventListener('click', connectAdb);
-        document.getElementById('bypassFrpButton').addEventListener('click', bypassFrp);
+            log('✅ FRP bypass commands completed. You may reboot your device now.', 'logadb');
+        });
     </script>
 
     <footer class="bg-gray-900 text-gray-400 p-4 mt-8 text-center">
@@ -249,6 +261,7 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
 </html>
+
 
 
 
