@@ -7,7 +7,7 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="webadb.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/webadb/webadb.js@master/webadb.js"></script>
     <style>
         body {
             background: linear-gradient(45deg, #1e293b, #0f172a);
@@ -64,6 +64,7 @@
             font-weight: bold;
         }
         ul { padding-left: 20px; }
+        a { text-decoration: underline; color: #3b82f6; }
     </style>
 </head>
 <body class="bg-gradient-to-r from-gray-800 to-black">
@@ -76,7 +77,7 @@
         <a class="github-button" href="https://github.com/sudo-self/samsung-frp-browser" data-color-scheme="light" data-icon="octicon-star" data-size="large">Star</a>
     </div>
 
- 
+    <!-- USB Debugging Section -->
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
         <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Enable USB Debugging</h1>
         <div class="flex justify-center mb-4">
@@ -87,7 +88,7 @@
         <div id="log" class="log"></div>
     </div>
 
-
+    <!-- FRP Bypass Section -->
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
         <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Bypass FRP</h1>
         <div class="flex justify-center mb-4">
@@ -97,26 +98,83 @@
         <div class="flex justify-center mb-4">
             <button id="bypassFrpButton" class="btn-secondary">Bypass FRP</button>
         </div>
-        <h3 class="text-xl text-gray-300 font-bold">frp.sudo-self.com</h3>
+        <h3 class="text-xl text-gray-300 font-bold"><a href="https://frp.sudo-self.com">frp.sudo-self.com</a></h3>
         <div class="warning">Note: USB Debugging must be enabled on the device first</div>
         <div id="logadb" class="log"></div>
     </div>
 
- 
+    <!-- Device Info & Command Progress -->
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
         <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Device Info & Progress</h1>
         <div id="deviceInfo" class="text-gray-300 mb-4">Device not connected</div>
         <ul id="commandProgress" class="list-disc list-inside text-green-400"></ul>
     </div>
 
+    <!-- Apps & Resources Section -->
+    <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
+        <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Calculator & Apps</h1>
+        <p>Open Calculator, enter the code <code>(+30012012732+)</code> on dialer <code>+#0808#</code> and choose MTP + ADB</p>
 
-    <div class="container mx-auto p-6 text-center bg-gray-900 rounded-lg shadow-lg">
-        <p class="text-2xl text-pink-500 font-bold mb-4">
-            <a href="https://unlock.JesseJesse.com" target="_blank" class="text-pink-400 hover:underline">Bypass Software</a>
-        </p>
-        <center><img src="./support.png" width="200px" height="auto"></center>
-        <p class="text-pink-500 font-bold mb-4 cursor-pointer" onclick="alert('This tool is for educational purposes only. Use on devices you own. I am not responsible for damages or data loss.')">Warning!</p>
+        <h2 class="text-2xl text-pink-400 font-bold mt-4">Internal Links</h2>
+        <ul class="text-blue-400">
+            <li><a href="https://ouo.io/fkDOyi" target="_blank">Galaxy Store</a></li>
+            <li><a href="https://ouo.io/GwU2Md" target="_blank">Google Quick Search Box</a></li>
+            <li><a href="https://ouo.io/Tlkvmk" target="_blank">Settings</a></li>
+            <li><a href="https://ouo.io/70A5k6" target="_blank">Screen Smartlock</a></li>
+            <li><a href="https://ouo.io/CX96vB" target="_blank">Samsung My Files</a></li>
+            <li><a href="https://ouo.io/woKjBP" target="_blank">YouTube</a></li>
+            <li><a href="https://ouo.io/p7JnguZ" target="_blank">Chrome</a></li>
+            <li><a href="https://ouo.io/kTYKYC" target="_blank">Alliance Shield</a></li>
+            <li><a href="https://galaxy.store/setting" target="_blank">Android Hidden Settings</a></li>
+            <li><a href="https://ouo.io/0skXNM" target="_blank">Login Account</a></li>
+            <li><a href="https://ouo.io/pilILk" target="_blank">Home Launcher</a></li>
+        </ul>
+
+        <h2 class="text-2xl text-pink-400 font-bold mt-4">Other Apps</h2>
+        <ul class="text-blue-400">
+            <li><a href="https://galaxystore.samsung.com/detail/com.rrivenllc.shieldx?session_id=W_0a719781bf2f739158262639f4c63d35" target="_blank">Alliance Shield on Galaxy Store</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Alliance_Shield.apk" target="_blank">Alliance_Shield.apk</a> // <a href="https://vnrom.ondex.app/Alliance_Shield.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Notification_Bar.apk" target="_blank">Notification_Bar.apk</a> // <a href="https://vnrom.ondex.app/Notification_Bar.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Package_Disabler_Pro.apk" target="_blank">Package_Disabler_Pro.apk</a> // <a href="https://vnrom.ondex.app/Package_Disabler_Pro.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Android_5_GAM.apk" target="_blank">Android_5_GAM.apk</a> // <a href="https://vnrom.ondex.app/Android_5_GAM.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Android_6_GAM.apk" target="_blank">Android_6_GAM.apk</a> // <a href="https://vnrom.ondex.app/Android_6_GAM.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Android_8-9-10_GAM.apk" target="_blank">Android_8-9-10_GAM.apk</a> // <a href="https://vnrom.ondex.app/Android_8-9-10_GAM.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Google_Setting.apk" target="_blank">Google_Setting.apk</a> // <a href="https://vnrom.ondex.app/Google_Setting.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/FRP_Bypass.apk" target="_blank">FRP_Bypass.apk</a> // <a href="https://vnrom.ondex.app/FRP_Bypass.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/FRP_Android_7.apk" target="_blank">FRP_Android_7.apk</a> // <a href="https://vnrom.ondex.app/FRP_Android_7.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/FRP_vnROM.apk" target="_blank">FRP_vnROM.apk</a> // <a href="https://vnrom.ondex.app/FRP_vnROM(1).apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Test_DPC.apk" target="_blank">Test_DPC.apk</a> // <a href="https://vnrom.ondex.app/Test_DPC.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/QuickShortcutMaker.apk" target="_blank">QuickShortcutMaker.apk</a> // <a href="https://vnrom.ondex.app/QuickShortcutMaker.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Apex_Launcher.apk" target="_blank">Apex_Launcher.apk</a> // <a href="https://vnrom.ondex.app/Apex_Launcher.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Nova_Launcher.apk" target="_blank">Nova_Launcher.apk</a> // <a href="https://vnrom.ondex.app/Nova_Launcher.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Menu_Button.apk" target="_blank">Menu_Button.apk</a> // <a href="https://vnrom.ondex.app/Menu_Button.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/ES_File_Explorer.apk" target="_blank">ES_File_Explorer.apk</a> // <a href="https://vnrom.ondex.app/ES_File_Explorer.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Setting.apk" target="_blank">Setting.apk</a> // <a href="https://vnrom.ondex.app/Setting.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Development_Settings.apk" target="_blank">Development_Settings.apk</a> // <a href="https://vnrom.ondex.app/Development_Settings.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/HushSMS.apk" target="_blank">HushSMS.apk</a> // <a href="https://vnrom.ondex.app/HushSMS.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Phone_Clone.apk" target="_blank">Phone_Clone.apk</a> // <a href="https://vnrom.ondex.app/Phone_Clone.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/File_Commander_Manager.apk" target="_blank">File_Commander_Manager.apk</a> // <a href="https://vnrom.ondex.app/File_Commander_Manager.apk" target="_blank">Backup link</a></li>
+            <li><a href="https://github.com/vnrom/bypass/raw/master/Smart_Switch_Mobile.apk" target="_blank">Smart_Switch_Mobile.apk</a> // <a href="https://vnrom.ondex.app/Smart_Switch_Mobile.apk" target="_blank">Backup link</a></li>
+        </ul>
+
+        <h2 class="text-2xl text-pink-400 font-bold mt-4">Additional Resources</h2>
+        <a href="https://pub-c1de1cb456e74d6bbbee111ba9e6c757.r2.dev/android.html" target="_blank">Hot Links</a>
     </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-900 text-gray-400 p-4 mt-8 text-center">
+        <p class="text-sm">samsung-frp-browser</p>
+        <p class="text-sm"><a href="https://github.com/sudo-self/samsung-frp-browser" class="text-gray-200 hover:underline">source code</a></p>
+        <p class="text-sm mt-2">
+            <a href="https://github.com/sudo-self/samsung-frp-browser/raw/main/unlock.bat"
+               class="text-blue-400 hover:underline"
+               download>
+               Unlock Script
+            </a>
+        </p>
+    </footer>
+
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
 
     <script>
         let usbDevice = null;
@@ -147,7 +205,6 @@
             ul.appendChild(li);
         }
 
-     
         document.getElementById('connectButton').addEventListener('click', async () => {
             if (!navigator.usb) {
                 log('❌ WebUSB not supported. Use Chrome or Edge.');
@@ -164,7 +221,6 @@
             }
         });
 
-    
         document.getElementById('connectAdbButton').addEventListener('click', async () => {
             if (!usbDevice) {
                 log('⚠️ Connect USB device first', 'logadb');
@@ -178,12 +234,10 @@
                 updateAdbStatus();
                 log('✅ ADB connected!', 'logadb');
 
-          
                 const model = await executeAdbCommand('getprop ro.product.model') || 'Unknown';
                 const androidVersion = await executeAdbCommand('getprop ro.build.version.release') || 'Unknown';
                 const deviceName = await executeAdbCommand('getprop ro.product.device') || 'Unknown';
                 updateDeviceInfo(`Model: ${model}, Android: ${androidVersion}, Device: ${deviceName}`);
-
             } catch (err) {
                 log(`❌ ADB connection failed: ${err.message}`, 'logadb');
                 adbConnected = false;
@@ -213,7 +267,6 @@
             }
         }
 
-        // Bypass FRP
         document.getElementById('bypassFrpButton').addEventListener('click', async () => {
             if (!adbConnected) {
                 log('⚠️ Connect via ADB first', 'logadb');
@@ -245,7 +298,6 @@
             log('✅ FRP bypass commands completed. You may reboot your device now.', 'logadb');
         });
     </script>
-
     <footer class="bg-gray-900 text-gray-400 p-4 mt-8 text-center">
         <p class="text-sm">samsung-frp-browser</p>
         <p class="text-sm"><a href="https://github.com/sudo-self/samsung-frp-browser" class="text-gray-200 hover:underline">source code</a></p>
@@ -261,6 +313,8 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
 </html>
+
+
 
 
 
