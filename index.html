@@ -7,7 +7,7 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/gh/webadb/webadb.js@master/webadb.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/webadbjs@0.1.9/dist/index.min.js"></script>
     <style>
         body {
             background: linear-gradient(45deg, #1e293b, #0f172a);
@@ -65,6 +65,18 @@
         }
         ul { padding-left: 20px; }
         a { text-decoration: underline; color: #3b82f6; }
+        .btn-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .progress-bar {
+            height: 6px;
+            background-color: #3b82f6;
+            width: 0%;
+            transition: width 0.5s;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-r from-gray-800 to-black">
@@ -85,22 +97,25 @@
         </div>
         <h3 class="text-xl text-gray-300 font-bold">Not working? Try a different USB port</h3>
         <div class="warning">Note: This requires a device in Download Mode or with OEM dialer codes enabled</div>
-        <div id="log" class="log"></div>
+        <div id="log" class="log">Waiting for connection...</div>
     </div>
 
     <!-- FRP Bypass Section -->
     <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg mb-8">
         <h1 class="text-3xl text-indigo-400 font-extrabold mb-4">Bypass FRP</h1>
-        <div class="flex justify-center mb-4">
-            <button id="connectAdbButton" class="btn-primary">Connect via ADB</button>
-            <span id="adbStatus" class="status-disconnected">Disconnected</span>
+        <div class="flex justify-center items-center mb-4">
+            <button id="connectAdbButton" class="btn-primary" disabled>Connect via ADB</button>
+            <span id="adbStatus" class="status-disconnected ml-3">Disconnected</span>
         </div>
         <div class="flex justify-center mb-4">
-            <button id="bypassFrpButton" class="btn-secondary">Bypass FRP</button>
+            <button id="bypassFrpButton" class="btn-secondary" disabled>Bypass FRP</button>
         </div>
-        <h3 class="text-xl text-gray-300 font-bold"><a href="https://frp.sudo-self.com">frp.sudo-self.com</a></h3>
+        <div class="progress-bar-container bg-gray-700 rounded-full">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <h3 class="text-xl text-gray-300 font-bold mt-4"><a href="https://frp.sudo-self.com">frp.sudo-self.com</a></h3>
         <div class="warning">Note: USB Debugging must be enabled on the device first</div>
-        <div id="logadb" class="log"></div>
+        <div id="logadb" class="log">ADB log will appear here...</div>
     </div>
 
     <!-- Device Info & Command Progress -->
@@ -180,17 +195,34 @@
         let usbDevice = null;
         let adbDevice = null;
         let adbConnected = false;
+        let adbInterface = null;
 
         function log(message, logId='log') {
             const logElement = document.getElementById(logId);
-            logElement.innerHTML += message + '<br>';
+            logElement.innerHTML += '> ' + message + '<br>';
             logElement.scrollTop = logElement.scrollHeight;
         }
 
         function updateAdbStatus() {
             const statusElement = document.getElementById('adbStatus');
             statusElement.textContent = adbConnected ? 'Connected' : 'Disconnected';
-            statusElement.className = adbConnected ? 'status-connected' : 'status-disconnected';
+            statusElement.className = adbConnected ? 'status-connected ml-3' : 'status-disconnected ml-3';
+            
+            // Enable/disable buttons based on connection status
+            document.getElementById('connectAdbButton').disabled = !usbDevice;
+            document.getElementById('bypassFrpButton').disabled = !adbConnected;
+            
+            if (usbDevice && !adbConnected) {
+                document.getElementById('connectAdbButton').classList.remove('btn-disabled');
+            } else if (!usbDevice) {
+                document.getElementById('connectAdbButton').classList.add('btn-disabled');
+            }
+            
+            if (adbConnected) {
+                document.getElementById('bypassFrpButton').classList.remove('btn-disabled');
+            } else {
+                document.getElementById('bypassFrpButton').classList.add('btn-disabled');
+            }
         }
 
         function updateDeviceInfo(info) {
@@ -205,6 +237,10 @@
             ul.appendChild(li);
         }
 
+        function updateProgress(percent) {
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
         document.getElementById('connectButton').addEventListener('click', async () => {
             if (!navigator.usb) {
                 log('❌ WebUSB not supported. Use Chrome or Edge.');
@@ -216,6 +252,10 @@
                 log(`✅ USB device selected: ${usbDevice.productName}`);
                 await usbDevice.open();
                 log('Device opened successfully.');
+                
+                // Enable ADB connect button
+                updateAdbStatus();
+                
             } catch (err) {
                 log(`❌ USB connection failed: ${err.message}`);
             }
@@ -227,17 +267,31 @@
                 return;
             }
             try {
-                log('Requesting ADB device...', 'logadb');
-                adbDevice = await Adb.open('WebUSB');
-                await adbDevice.connectAdb('host::');
+                log('Initializing ADB connection...', 'logadb');
+                
+                // Create ADB instance
+                const adb = new ADB();
+                
+                // Connect to device
+                adbDevice = await adb.connect(usbDevice);
+                log('✅ ADB device connected', 'logadb');
+                
+                // Get device info
+                try {
+                    const model = await adbDevice.execOut('getprop ro.product.model');
+                    const androidVersion = await adbDevice.execOut('getprop ro.build.version.release');
+                    const deviceName = await adbDevice.execOut('getprop ro.product.device');
+                    
+                    updateDeviceInfo(`Model: ${model.trim()}, Android: ${androidVersion.trim()}, Device: ${deviceName.trim()}`);
+                } catch (e) {
+                    log('⚠️ Could not get device info: ' + e.message, 'logadb');
+                    updateDeviceInfo('Device connected (info unavailable)');
+                }
+                
                 adbConnected = true;
                 updateAdbStatus();
-                log('✅ ADB connected!', 'logadb');
-
-                const model = await executeAdbCommand('getprop ro.product.model') || 'Unknown';
-                const androidVersion = await executeAdbCommand('getprop ro.build.version.release') || 'Unknown';
-                const deviceName = await executeAdbCommand('getprop ro.product.device') || 'Unknown';
-                updateDeviceInfo(`Model: ${model}, Android: ${androidVersion}, Device: ${deviceName}`);
+                log('✅ ADB connected successfully!', 'logadb');
+                
             } catch (err) {
                 log(`❌ ADB connection failed: ${err.message}`, 'logadb');
                 adbConnected = false;
@@ -246,29 +300,8 @@
             }
         });
 
-        async function executeAdbCommand(command) {
-            if (!adbConnected || !adbDevice) {
-                log('⚠️ Not connected to ADB device', 'logadb');
-                return '';
-            }
-            try {
-                log(`> ${command}`, 'logadb');
-                const stream = await adbDevice.shell(command);
-                let output = '';
-                for await (const data of stream) {
-                    output += new TextDecoder().decode(data);
-                }
-                await stream.close();
-                log(output.trim(), 'logadb');
-                return output.trim();
-            } catch (err) {
-                log(`❌ Command error: ${err.message}`, 'logadb');
-                return '';
-            }
-        }
-
         document.getElementById('bypassFrpButton').addEventListener('click', async () => {
-            if (!adbConnected) {
+            if (!adbConnected || !adbDevice) {
                 log('⚠️ Connect via ADB first', 'logadb');
                 return;
             }
@@ -286,31 +319,31 @@
             document.getElementById('commandProgress').innerHTML = '';
             log('⚡ Starting FRP bypass...', 'logadb');
 
-            for (const cmd of commands) {
+            for (let i = 0; i < commands.length; i++) {
+                const cmd = commands[i];
                 try {
-                    await executeAdbCommand(cmd);
+                    log(`Executing: ${cmd}`, 'logadb');
+                    const result = await adbDevice.execOut(cmd);
+                    if (result) log(result.trim(), 'logadb');
                     addCommandProgress(cmd, true);
+                    
+                    // Update progress
+                    updateProgress(((i + 1) / commands.length) * 100);
+                    
                     await new Promise(r => setTimeout(r, 1000));
-                } catch {
+                } catch (err) {
+                    log(`❌ Error executing command: ${err.message}`, 'logadb');
                     addCommandProgress(cmd, false);
                 }
             }
+            
+            updateProgress(100);
             log('✅ FRP bypass commands completed. You may reboot your device now.', 'logadb');
         });
-    </script>
-    <footer class="bg-gray-900 text-gray-400 p-4 mt-8 text-center">
-        <p class="text-sm">samsung-frp-browser</p>
-        <p class="text-sm"><a href="https://github.com/sudo-self/samsung-frp-browser" class="text-gray-200 hover:underline">source code</a></p>
-        <p class="text-sm mt-2">
-            <a href="https://github.com/sudo-self/samsung-frp-browser/raw/main/unlock.bat"
-               class="text-blue-400 hover:underline"
-               download>
-               Unlock Script
-            </a>
-        </p>
-    </footer>
 
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
+        // Initialize button states
+        updateAdbStatus();
+    </script>
 </body>
 </html>
 
